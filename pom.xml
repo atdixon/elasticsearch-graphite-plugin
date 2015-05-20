@@ -82,7 +82,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                    <attach>true</attach>
                     <appendAssemblyId>false</appendAssemblyId>
                     <outputDirectory>${project.build.directory}/releases/</outputDirectory>
                     <descriptors>
@@ -132,12 +131,14 @@
                                             <filemode>755</filemode>
                                             <username>buzzuser</username>
                                             <groupname>buzzuser</groupname>
-                                            <!-- include assembly artifact -->
-                                            <artifact>
-                                                <classifiers>
-                                                    <classifier>zip</classifier>
-                                                </classifiers>
-                                            </artifact>
+                                            <sources>
+                                                <source> <!-- include assembly zip -->
+                                                    <location>${project.build.directory}/releases/</location>
+                                                    <includes>
+                                                        <include>*.zip</include>
+                                                    </includes>
+                                                </source>
+                                            </sources>
                                         </mapping>
                                     </mappings>
                                 </configuration>
