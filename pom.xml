@@ -80,6 +80,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
+                    <attach>true</attach>
                     <appendAssemblyId>false</appendAssemblyId>
                     <outputDirectory>${project.build.directory}/releases/</outputDirectory>
                     <descriptors>
@@ -98,4 +99,81 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>deploy-rpm</id>
+            <build>
+                <plugins>
+                    <!-- build standalone rpm with kafka graphite jars. -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>rpm-maven-plugin</artifactId>
+                        <version>2.1.3</version>
+                        <executions>
+                            <execution>
+                                <id>elasticsearch-plugin-graphite-rpm</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attached-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <group>Applications/System</group>
+                                    <!-- rpm artifact/install name -->
+                                    <name>elasticsearch-plugin-graphite</name>
+                                    <!-- rpm artifact/install version -->
+                                    <projversion>${project.version}</projversion>
+                                    <classifier>rpm</classifier>
+                                    <mappings>
+                                        <mapping>
+                                            <!-- install into /opt/elasticsearch-plugin-graphite -->
+                                            <directory>/opt/elasticsearch-plugin-graphite</directory>
+                                            <filemode>755</filemode>
+                                            <username>buzzuser</username>
+                                            <groupname>buzzuser</groupname>
+                                            <!-- include assembly artifact -->
+                                            <artifact>
+                                                <classifiers>
+                                                    <classifier>zip</classifier>
+                                                </classifiers>
+                                            </artifact>
+                                        </mapping>
+                                    </mappings>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin> <!-- deploy rpm to yum -->
+                        <groupId>com.bazaarvoice.maven.plugins</groupId>
+                        <artifactId>s3repo-maven-plugin</artifactId>
+                        <version>3.5</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase> <!-- use package phase, don't require deploy -->
+                                <goals>
+                                    <goal>create-update</goal>
+                                </goals>
+                                <configuration>
+                                    <s3RepositoryPath>${provided.target.s3RepositoryPath}</s3RepositoryPath>
+                                    <createrepoOpts>--simple-md-filenames --no-database</createrepoOpts>
+                                    <ignoreVerificationFailures>true</ignoreVerificationFailures>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>${project.artifactId}</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>rpm</type>
+                                            <classifier>rpm</classifier>
+                                            <!-- nicety: use explicit basename so we don't see this pom version -->
+                                            <targetBaseName>elasticsearch-plugin-graphite-${project.version}</targetBaseName>
+                                            <targetSubfolder>elasticsearch-plugin-graphite</targetSubfolder>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
