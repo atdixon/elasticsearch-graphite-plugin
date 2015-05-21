@@ -96,7 +96,7 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
         }
 
         public void run() {
-            logger.trace("cycle (closed = {})", closed);
+            logger.trace("run(), (closed = {})", closed);
             while (!closed) {
                 try {
                     DiscoveryNode node = clusterService.localNode();
@@ -127,6 +127,7 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
                     continue;
                 }
             }
+            logger.trace("ending run(), (closed = {})", closed);
         }
 
         private List<IndexShard> getIndexShards(IndicesService indicesService) {
