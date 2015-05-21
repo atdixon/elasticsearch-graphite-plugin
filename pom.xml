@@ -11,7 +11,7 @@
     <url>https://github.com/spinscale/elasticsearch-graphite-plugin/</url>
 
     <properties>
-        <elasticsearch.version>1.4.4</elasticsearch.version>
+        <elasticsearch.version>1.5.0</elasticsearch.version>
         <hamcrest.version>1.3</hamcrest.version>
         <!-- required for some plugins, eg rpm-maven-plugin -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
