@@ -96,26 +96,19 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
         }
 
         public void run() {
-            logger.trace("run(), (closed = {})", closed);
+            logger.trace("running cycle, (closed = {})", closed);
             while (!closed) {
                 try {
                     DiscoveryNode node = clusterService.localNode();
                     boolean isClusterStarted = clusterService.lifecycleState().equals(Lifecycle.State.STARTED);
-                    logger.trace("cycle (isClusterStarted = {}, node.isMasterNode = {})",
-                        isClusterStarted, node == null ? "<null>" : node.isMasterNode());
                     if (isClusterStarted && node != null && node.isMasterNode()) {
-                        logger.trace("getting index stats...");
                         NodeIndicesStats nodeIndicesStats = indicesService.stats(false);
                         CommonStatsFlags commonStatsFlags = new CommonStatsFlags().clear();
-                        logger.trace("getting node stats...");
                         NodeStats nodeStats = nodeService.stats(commonStatsFlags, true, true, true, true, true, true, true, true, true);
-                        logger.trace("getting shards...");
                         List<IndexShard> indexShards = getIndexShards(indicesService);
 
-                        logger.trace("creating reporter...");
                         GraphiteReporter graphiteReporter = new GraphiteReporter(graphiteHost, graphitePort, graphitePrefix,
                             nodeIndicesStats, indexShards, nodeStats, graphiteInclusionRegex, graphiteExclusionRegex);
-                        logger.trace("reporting...");
                         graphiteReporter.run();
                     } else {
                         if (node != null) {
@@ -132,7 +125,7 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
                     continue;
                 }
             }
-            logger.trace("ending run(), (closed = {})", closed);
+            logger.trace("terminating cycle, (closed = {})", closed);
         }
 
         private List<IndexShard> getIndexShards(IndicesService indicesService) {
