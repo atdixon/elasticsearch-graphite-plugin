@@ -98,23 +98,27 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
         public void run() {
             logger.trace("cycle (closed = {})", closed);
             while (!closed) {
-                DiscoveryNode node = clusterService.localNode();
-                boolean isClusterStarted = clusterService.lifecycleState().equals(Lifecycle.State.STARTED);
-                logger.trace("cycle (isClusterStarted = {}, node.isMasterNode = {})",
-                    isClusterStarted, node == null ? "<null>" : node.isMasterNode());
-                if (isClusterStarted && node != null && node.isMasterNode()) {
-                    NodeIndicesStats nodeIndicesStats = indicesService.stats(false);
-                    CommonStatsFlags commonStatsFlags = new CommonStatsFlags().clear();
-                    NodeStats nodeStats = nodeService.stats(commonStatsFlags, true, true, true, true, true, true, true, true, true);
-                    List<IndexShard> indexShards = getIndexShards(indicesService);
+                try {
+                    DiscoveryNode node = clusterService.localNode();
+                    boolean isClusterStarted = clusterService.lifecycleState().equals(Lifecycle.State.STARTED);
+                    logger.trace("cycle (isClusterStarted = {}, node.isMasterNode = {})",
+                        isClusterStarted, node == null ? "<null>" : node.isMasterNode());
+                    if (isClusterStarted && node != null && node.isMasterNode()) {
+                        NodeIndicesStats nodeIndicesStats = indicesService.stats(false);
+                        CommonStatsFlags commonStatsFlags = new CommonStatsFlags().clear();
+                        NodeStats nodeStats = nodeService.stats(commonStatsFlags, true, true, true, true, true, true, true, true, true);
+                        List<IndexShard> indexShards = getIndexShards(indicesService);
 
-                    GraphiteReporter graphiteReporter = new GraphiteReporter(graphiteHost, graphitePort, graphitePrefix,
+                        GraphiteReporter graphiteReporter = new GraphiteReporter(graphiteHost, graphitePort, graphitePrefix,
                             nodeIndicesStats, indexShards, nodeStats, graphiteInclusionRegex, graphiteExclusionRegex);
-                    graphiteReporter.run();
-                } else {
-                    if (node != null) {
-                        logger.debug("[{}]/[{}] is not master node, not triggering update", node.getId(), node.getName());
+                        graphiteReporter.run();
+                    } else {
+                        if (node != null) {
+                            logger.debug("[{}]/[{}] is not master node, not triggering update", node.getId(), node.getName());
+                        }
                     }
+                } catch (Exception e) {
+                    logger.error("unexpected exception on cycle", e);
                 }
 
                 try {
