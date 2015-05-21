@@ -104,20 +104,25 @@ public class GraphiteService extends AbstractLifecycleComponent<GraphiteService>
                     logger.trace("cycle (isClusterStarted = {}, node.isMasterNode = {})",
                         isClusterStarted, node == null ? "<null>" : node.isMasterNode());
                     if (isClusterStarted && node != null && node.isMasterNode()) {
+                        logger.trace("getting index stats...");
                         NodeIndicesStats nodeIndicesStats = indicesService.stats(false);
                         CommonStatsFlags commonStatsFlags = new CommonStatsFlags().clear();
+                        logger.trace("getting node stats...");
                         NodeStats nodeStats = nodeService.stats(commonStatsFlags, true, true, true, true, true, true, true, true, true);
+                        logger.trace("getting shards...");
                         List<IndexShard> indexShards = getIndexShards(indicesService);
 
+                        logger.trace("creating reporter...");
                         GraphiteReporter graphiteReporter = new GraphiteReporter(graphiteHost, graphitePort, graphitePrefix,
                             nodeIndicesStats, indexShards, nodeStats, graphiteInclusionRegex, graphiteExclusionRegex);
+                        logger.trace("reporting...");
                         graphiteReporter.run();
                     } else {
                         if (node != null) {
                             logger.debug("[{}]/[{}] is not master node, not triggering update", node.getId(), node.getName());
                         }
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     logger.error("unexpected exception on cycle", e);
                 }
 
