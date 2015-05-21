@@ -384,6 +384,7 @@ public class GraphiteReporter {
     }
 
     protected void sendToGraphite(String name, String value) {
+        logger.trace("sendToGraphite({}, {})", name, value);
         try {
             String nameToSend = sanitizeString(name);
             // check if this value is excluded
