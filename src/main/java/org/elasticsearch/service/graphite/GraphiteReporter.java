@@ -432,7 +432,7 @@ public class GraphiteReporter {
     }
 
     protected String sanitizeString(String s) {
-        return s.replace(' ', '-');
+        return s.replaceAll("(&|/|\\.|\\s)", "_");
     }
 
     protected String buildMetricName(String name) {
